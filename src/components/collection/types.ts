@@ -1,0 +1,26 @@
+export type CollectionItem = {
+  id: string;
+  catalogGameId: string;
+  platformId: string;
+  generationId: string;
+  ownershipType: "physical" | "digital";
+  store: string | null;
+  edition: string | null;
+  region: string | null;
+  condition: string | null;
+  purchaseDate: string | null;
+  purchasePrice: number | null;
+  purchaseCurrency: string | null;
+  status: "backlog" | "playing" | "completed" | "paused" | "dropped";
+  isFavorite: boolean;
+  isPublic: boolean;
+  rating: number | null;
+  notes: string | null;
+  playtimeMinutes: number | null;
+  source: string;
+  verificationStatus: string;
+  version: number;
+  createdAt: string;
+  game: { id: string; title: string; coverUrl: string | null; releaseDate: string | null; dataSource: "igdb" | "manual" | "demo"; series: string[] };
+  placement: { shelfIndex: number; slotIndex: number; sortIndex: number } | null;
+};
