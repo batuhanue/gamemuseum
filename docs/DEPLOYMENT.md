@@ -2,12 +2,12 @@
 
 ## 1. Create the project
 1. Import the GitHub repository in Vercel (framework preset: **Next.js**).
-2. Build command: **`npm run vercel-build`** (runs migrations and reference-data seeding, then `next build`).
+2. Build command: **`npm run vercel-build`** (runs migrations and reference-data seeding, then `next build`). If you keep the default `next build`, migrations are still applied automatically on the first database connection (under a Postgres advisory lock).
 3. Node.js 20.9+ (22 recommended).
 
 ## 2. Database — Vercel Postgres (Neon)
 1. Vercel dashboard → **Storage → Create → Neon (Postgres)** and connect it to the project (Production + Preview).
-2. Vercel injects `DATABASE_URL` (use the **pooled** connection string). Nothing else is required.
+2. Vercel injects `DATABASE_URL` (also accepted: `POSTGRES_URL`). Nothing else is required. **Redeploy after connecting the database** — environment variables only apply to new deployments.
 3. On each deploy `npm run db:migrate` applies `drizzle/*.sql` and `npm run db:seed` inserts platforms, generations, themes, award definitions and the demo catalog (idempotent; admin edits are never overwritten).
 4. Optional: `DATABASE_POOL_MAX` (default 5).
 

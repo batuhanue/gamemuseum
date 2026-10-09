@@ -19,6 +19,8 @@ export function errorResponse(err: unknown) {
     );
   }
   void logError("api", err);
+  const db = describeDbError(err);
+  if (db) return NextResponse.json({ error: { code: "unavailable", message: db } }, { status: 503 });
   return NextResponse.json({ error: { code: "internal", message: "Unexpected server error" } }, { status: 500 });
 }
 
@@ -58,4 +60,21 @@ export async function parseBody<T>(req: NextRequest, schema: ZodType<T>): Promis
     throw new AppError("invalid", "Body must be JSON");
   }
   return schema.parse(raw);
+}
+
+/** Maps infrastructure failures to an actionable message (no credentials or SQL are exposed). */
+function describeDbError(err: unknown): string | null {
+  const seen = new Set<unknown>();
+  let e: unknown = err;
+  while (e && typeof e === "object" && !seen.has(e)) {
+    seen.add(e);
+    const code = (e as { code?: string }).code;
+    if (code === "ECONNREFUSED" || code === "ENOTFOUND" || code === "ETIMEDOUT" || code === "ECONNRESET") return "Database is unreachable. Check DATABASE_URL.";
+    if (code === "28P01" || code === "28000") return "Database rejected the credentials. Check DATABASE_URL.";
+    if (code === "3D000") return "Database does not exist. Check DATABASE_URL.";
+    if (code === "42P01" || code === "42703") return "Database schema is not migrated. Run `npm run db:migrate` or redeploy.";
+    if (code === "EROFS" || code === "ENOENT") return "Database is not configured for this deployment (DATABASE_URL missing).";
+    e = (e as { cause?: unknown }).cause;
+  }
+  return null;
 }

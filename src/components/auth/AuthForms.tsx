@@ -71,7 +71,7 @@ export function LoginForm() {
       router.push(safeNext(params.get("next")) ?? (r.onboarded ? "/museum" : "/onboarding"));
       router.refresh();
     } catch (e) {
-      setError(e instanceof ApiError && e.status === 401 ? t("auth.invalid") : e instanceof ApiError && e.status === 429 ? t("errors.rateLimited") : t("common.error"));
+      setError(e instanceof ApiError && e.status === 401 ? t("auth.invalid") : e instanceof ApiError && e.status === 429 ? t("errors.rateLimited") : e instanceof ApiError && e.status === 503 ? `${t("errors.unavailable")} (${e.message})` : t("common.error"));
     }
   });
 
@@ -122,7 +122,7 @@ export function RegisterForm() {
       router.refresh();
     } catch (e) {
       const field = e instanceof ApiError ? (e.details as { field?: string } | undefined)?.field : undefined;
-      setError(field === "email" ? t("auth.emailTaken") : field === "username" ? t("auth.usernameTaken") : e instanceof ApiError && e.status === 429 ? t("errors.rateLimited") : t("common.error"));
+      setError(field === "email" ? t("auth.emailTaken") : field === "username" ? t("auth.usernameTaken") : e instanceof ApiError && e.status === 429 ? t("errors.rateLimited") : e instanceof ApiError && e.status === 503 ? `${t("errors.unavailable")} (${e.message})` : t("common.error"));
     }
   });
   const errs = form.formState.errors;

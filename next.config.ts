@@ -5,6 +5,8 @@ const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 
 const nextConfig: NextConfig = {
   serverExternalPackages: ["@electric-sql/pglite", "pg", "bcryptjs"],
+  // SQL migrations are read at runtime on first DB connection; ship them with every function.
+  outputFileTracingIncludes: { "/**": ["./drizzle/**/*"] },
   images: {
     remotePatterns: [{ protocol: "https", hostname: "images.igdb.com" }],
   },
