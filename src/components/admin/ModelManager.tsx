@@ -180,7 +180,12 @@ export function ModelManager() {
 
           <div className="rounded-xl border hairline p-3">
             <div className="mb-2 text-xs text-slate">Model file (.glb, max 50 MB){edit.modelUrl ? " — uploading a new file creates a new version; placements stay intact." : ""}</div>
-            <input type="file" accept=".glb,.gltf,model/gltf-binary" disabled={!!busy || storage === "none"} onChange={(e) => e.target.files?.[0] && void onFile(e.target.files[0])} aria-label="Model file" />
+            <input type="file" accept=".glb,.gltf,model/gltf-binary" disabled={!!busy || storage === "none"} className="disabled:cursor-not-allowed disabled:opacity-40" onChange={(e) => e.target.files?.[0] && void onFile(e.target.files[0])} aria-label="Model file" />
+            {storage === "none" && (
+              <p role="alert" className="mt-2 text-xs text-[#ffcf8a]">
+                Upload disabled: file storage is not configured. In Vercel open Storage → Create → Blob, connect it to this project (Production + Preview), then redeploy. / Yükleme kapalı: Vercel → Storage → Blob oluşturup projeye bağla ve yeniden deploy et.
+              </p>
+            )}
             {busy && <div className="mt-2 text-xs text-gold">{busy}…</div>}
           </div>
 
