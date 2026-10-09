@@ -3,6 +3,7 @@ import path from "node:path";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import * as schema from "./schema";
 import { AppError } from "../errors";
+import { pgPoolConfig } from "./pg-config";
 
 export type DB = NodePgDatabase<typeof schema>;
 
@@ -27,12 +28,7 @@ async function create(): Promise<DB> {
     const { drizzle } = await import("drizzle-orm/node-postgres");
     const { migrate } = await import("drizzle-orm/node-postgres/migrator");
     const { Pool } = await import("pg");
-    const pool = new Pool({
-      connectionString: url,
-      max: Number(process.env.DATABASE_POOL_MAX ?? 5),
-      ssl: /localhost|127\.0\.0\.1/.test(url) ? undefined : { rejectUnauthorized: false },
-      connectionTimeoutMillis: 10_000,
-    });
+    const pool = new Pool(pgPoolConfig(url, { max: Number(process.env.DATABASE_POOL_MAX ?? 5), connectionTimeoutMillis: 10_000 }));
     const client = await pool.connect();
     try {
       await client.query("select pg_advisory_lock($1)", [MIGRATION_LOCK]);

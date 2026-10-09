@@ -71,3 +71,13 @@ describe("i18n", () => {
     expect(keys(tr)).toEqual(keys(en));
   });
 });
+
+describe("postgres config", async () => {
+  const { pgPoolConfig } = await import("@/lib/db/pg-config");
+  it("verifies TLS for remote databases and leaves local ones alone", () => {
+    expect(pgPoolConfig("postgres://u:p@ep-x.neon.tech/db?sslmode=require").connectionString).toContain("sslmode=verify-full");
+    expect(pgPoolConfig("postgres://u:p@ep-x.neon.tech/db").connectionString).toContain("sslmode=verify-full");
+    expect(pgPoolConfig("postgres://u:p@ep-x.neon.tech/db?sslmode=disable").connectionString).toContain("sslmode=disable");
+    expect(pgPoolConfig("postgres://app@localhost:5544/gm").connectionString).toBe("postgres://app@localhost:5544/gm");
+  });
+});
