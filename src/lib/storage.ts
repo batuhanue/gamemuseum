@@ -54,19 +54,19 @@ export function validateModelBytes(bytes: Uint8Array, fileName: string): "glb" |
 
 export async function saveLocalModel(bytes: Uint8Array, ext: "glb" | "gltf") {
   if (!localUploadsAllowed()) throw new AppError("unavailable", "Configure BLOB_READ_WRITE_TOKEN for uploads");
-  const dir = path.resolve("public/uploads/models");
+  const dir = path.join(/* turbopackIgnore: true */ process.cwd(), "public/uploads/models");
   await mkdir(dir, { recursive: true });
   const name = `${newId("m")}.${ext}`;
-  await writeFile(path.join(dir, name), bytes);
+  await writeFile(path.join(/* turbopackIgnore: true */ dir, name), bytes);
   return `/uploads/models/${name}`;
 }
 
 export async function saveLocalImage(bytes: Uint8Array, ext: "png" | "webp" | "jpg") {
   if (!localUploadsAllowed()) throw new AppError("unavailable", "Configure BLOB_READ_WRITE_TOKEN for uploads");
-  const dir = path.resolve("public/uploads/thumbs");
+  const dir = path.join(/* turbopackIgnore: true */ process.cwd(), "public/uploads/thumbs");
   await mkdir(dir, { recursive: true });
   const name = `${newId("t")}.${ext}`;
-  await writeFile(path.join(dir, name), bytes);
+  await writeFile(path.join(/* turbopackIgnore: true */ dir, name), bytes);
   return `/uploads/thumbs/${name}`;
 }
 

@@ -36,7 +36,7 @@ async function create(): Promise<DB> {
     const client = await pool.connect();
     try {
       await client.query("select pg_advisory_lock($1)", [MIGRATION_LOCK]);
-      await migrate(drizzle(client), { migrationsFolder: path.join(process.cwd(), "drizzle") });
+      await migrate(drizzle(client), { migrationsFolder: path.join(/* turbopackIgnore: true */ process.cwd(), "drizzle") });
     } finally {
       await client.query("select pg_advisory_unlock($1)", [MIGRATION_LOCK]).catch(() => undefined);
       client.release();
@@ -50,11 +50,11 @@ async function create(): Promise<DB> {
   const { PGlite } = await import("@electric-sql/pglite");
   const { drizzle } = await import("drizzle-orm/pglite");
   const { migrate } = await import("drizzle-orm/pglite/migrator");
-  const dir = process.env.PGLITE_DIR === "memory://" ? "memory://" : path.resolve(process.env.PGLITE_DIR ?? ".data/pglite");
+  const dir = process.env.PGLITE_DIR === "memory://" ? "memory://" : path.resolve(/* turbopackIgnore: true */ process.cwd(), process.env.PGLITE_DIR ?? ".data/pglite");
   if (dir !== "memory://") await (await import("node:fs/promises")).mkdir(dir, { recursive: true });
   const client = new PGlite(dir);
   const db = drizzle(client, { schema });
-  await migrate(db, { migrationsFolder: path.join(process.cwd(), "drizzle") });
+  await migrate(db, { migrationsFolder: path.join(/* turbopackIgnore: true */ process.cwd(), "drizzle") });
   return db as unknown as DB;
 }
 
