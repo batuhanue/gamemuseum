@@ -13,7 +13,8 @@ export function blobConfigured() {
 
 /** Local uploads are a development convenience only; production must use Vercel Blob. */
 export function localUploadsAllowed() {
-  return !blobConfigured() && process.env.APP_ENV !== "production";
+  // Never on Vercel: read-only filesystem and a 4.5 MB request-body limit (HTTP 413).
+  return !blobConfigured() && !process.env.VERCEL && process.env.APP_ENV !== "production";
 }
 
 export function isTrustedModelUrl(url: string) {

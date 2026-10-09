@@ -43,7 +43,8 @@ async function uploadFile(file: File, kind: "model" | "thumb", storage: string):
   fd.append("file", file);
   fd.append("kind", kind);
   const res = await fetch("/api/admin/assets/upload-local", { method: "POST", body: fd });
-  const body = (await res.json()) as { url?: string; error?: { message: string } };
+  if (res.status === 413) throw new Error("File too large for a direct server upload. Connect Vercel Blob (BLOB_READ_WRITE_TOKEN) and redeploy.");
+  const body = (await res.json().catch(() => ({}))) as { url?: string; error?: { message: string } };
   if (!res.ok || !body.url) throw new Error(body.error?.message ?? "Upload failed");
   return body.url;
 }
@@ -136,7 +137,7 @@ export function ModelManager() {
           <h2 className="font-semibold">3D Assets</h2>
           <Button size="sm" variant="secondary" onClick={() => { setEdit(empty()); setPendingFile(null); setMsg(null); }}>+ New</Button>
         </div>
-        <p className="mb-3 text-xs text-slate">Storage: {storage === "blob" ? "Vercel Blob" : storage === "local" ? "local /public/uploads (development only)" : "not configured — set BLOB_READ_WRITE_TOKEN"}</p>
+        <p className="mb-3 text-xs text-slate">Storage: {storage === "blob" ? "Vercel Blob" : storage === "local" ? "local /public/uploads (development only)" : "not configured — Vercel → Storage → Create → Blob, connect it to this project, then redeploy (BLOB_READ_WRITE_TOKEN)."}</p>
         <ul className="space-y-1.5">
           {list.data?.assets.map((a) => (
             <li key={a.id}>
