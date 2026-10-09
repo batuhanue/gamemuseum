@@ -67,6 +67,11 @@ export function MuseumExperience({ initial, queryKey, fetchUrl, basePath, readOn
     setPage: useMuseumStore((x) => x.setPage),
   };
   const [attempt, setAttempt] = useState(0);
+  // A context lost in an earlier visit should not lock the museum: retry once when it mounts again.
+  useEffect(() => {
+    const st = useMuseumStore.getState();
+    if (st.webgl === "lost" || st.webgl === "error") st.set({ webgl: "unknown" });
+  }, []);
   const [mobileView, setMobileView] = useState<"shelf" | "list">("shelf");
   const [force2d, setForce2d] = useState(false);
   const explore = params.get("explore") === "1";

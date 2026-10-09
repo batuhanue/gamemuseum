@@ -1,5 +1,5 @@
 "use client";
-import { Component, Suspense, useEffect, useState, type ReactNode } from "react";
+import { Component, Suspense, useEffect, useRef, useState, type ReactNode } from "react";
 import { Canvas } from "@react-three/fiber";
 import { AdaptiveDpr, PerformanceMonitor } from "@react-three/drei";
 import { useMuseumStore, type Quality } from "@/stores/museum-store";
@@ -57,6 +57,13 @@ export function MuseumCanvas({ snapshot, mode, texts, orders, onReorder, classNa
   const set = useMuseumStore((s) => s.set);
   const quality = useMuseumStore((s) => s.quality);
   const [ready, setReady] = useState(false);
+  const unmounting = useRef(false);
+  useEffect(() => {
+    unmounting.current = false;
+    return () => {
+      unmounting.current = true;
+    };
+  }, []);
 
   useEffect(() => {
     if (!detectWebGL()) {
@@ -81,10 +88,19 @@ export function MuseumCanvas({ snapshot, mode, texts, orders, onReorder, classNa
           gl={{ antialias: quality !== "low", powerPreference: "high-performance", alpha: false, stencil: false }}
           onPointerMissed={() => set({ selectedCopyId: null, selectedAwardId: null })}
           onCreated={({ gl }) => {
-            gl.domElement.addEventListener("webglcontextlost", (e) => {
+            const canvas = gl.domElement;
+            let timer: ReturnType<typeof setTimeout> | undefined;
+            canvas.addEventListener("webglcontextlost", (e) => {
+              // R3F deliberately forces a context loss when the canvas unmounts (route change);
+              // that is not a failure. Real losses get a grace period for the browser to restore.
+              if (unmounting.current || !canvas.isConnected) return;
               e.preventDefault();
-              set({ webgl: "lost" });
+              clearTimeout(timer);
+              timer = setTimeout(() => {
+                if (!unmounting.current && canvas.isConnected) set({ webgl: "lost" });
+              }, 2500);
             });
+            canvas.addEventListener("webglcontextrestored", () => clearTimeout(timer));
           }}
           aria-label={texts.showcase}
         >

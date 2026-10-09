@@ -134,3 +134,17 @@ test("catalog search returns labelled demo results without IGDB", async ({ reque
   expect(r.source).toBe("demo");
   expect(r.games.length).toBeGreaterThan(0);
 });
+
+test("leaving the museum and coming back keeps the 3D scene (no false context-loss fallback)", async ({ page }) => {
+  await registerViaApi(page.request);
+  await addCopy(page.request, "demo-lumen", "ps5");
+  await page.goto("/museum");
+  await expect(page.locator("canvas").first()).toBeVisible();
+  await page.getByRole("link", { name: /^(Koleksiyonum|My Collection)$/ }).first().click();
+  await page.waitForURL(/\/collection/);
+  await page.getByRole("link", { name: /^(Müze|Museum)$/ }).first().click();
+  await page.waitForURL(/\/museum$/);
+  await page.waitForTimeout(3500);
+  await expect(page.getByText(/3B müze açılamadı|3D museum could not start/)).toHaveCount(0);
+  await expect(page.locator("canvas").first()).toBeVisible();
+});
